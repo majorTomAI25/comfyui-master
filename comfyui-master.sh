@@ -1,28 +1,20 @@
 #!/bin/bash
 
-# Define o diretório persistente para Quickpod
-PERSISTENT_DIR="/home/runner"
+# Define o diretório persistente 
+PERSISTENT_DIR="/workspace"
 cd "$PERSISTENT_DIR"
 
 # Causa o script a sair em caso de falha de qualquer comando.
 set -eo pipefail
 
-echo "Iniciando provisionamento personalizado para Quickpod (versão final)..."
-
-# --- Instalações Iniciais do Sistema (se a imagem base não tiver) ---
-# Embora a imagem ComfyUI_Qick25 deva ter muitos, é bom garantir o ffmpeg.
-echo "Verificando e instalando dependências do sistema (ffmpeg)..."
-apt-get update -y || echo "Aviso: apt-get update falhou."
-apt-get install -y ffmpeg || echo "Aviso: ffmpeg já instalado ou falhou a instalar."
-echo "Dependências do sistema verificadas/instaladas."
-
+echo "Iniciando provisionamento rápido: ComfyUI Master e dependências essenciais..."
 
 # --- Ativação do Ambiente Python (Prioriza venv, depois Conda) ---
 echo "Tentando ativar ambiente Python..."
-if [ -f "/venv/main/bin/activate" ]; then # Tenta venv se for o caso
+if [ -f "/venv/main/bin/activate" ]; then
     . /venv/main/bin/activate
     echo "Ambiente venv '/venv/main' ativado."
-elif CONDA_BASE_PATH=$(conda info --base 2>/dev/null); then # Tenta Conda
+elif CONDA_BASE_PATH=$(conda info --base 2>/dev/null); then
     source "$CONDA_BASE_PATH"/etc/profile.d/conda.sh
     echo "Conda base path: $CONDA_BASE_PATH"
     if conda activate comfy; then
@@ -51,18 +43,16 @@ git config --global --add safe.directory "$(pwd)" # Garante que o diretório atu
 git config pull.rebase false
 git pull origin master
 
-# Instalação das dependências PyTorch com CUDA (cu124 - ajustado para o log)
-echo "Instalando PyTorch com CUDA (cu124 - ajustado para o log)..."
+# Instalação das dependências PyTorch com CUDA (cu124 - para Vast.ai/comfy)
+echo "Instalando PyTorch com CUDA (cu124 - ajustado para o template Vast.ai/comfy)..."
 pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu124 || \
 echo "Aviso: Falha na instalação de PyTorch com cu124. Verifique a compatibilidade CUDA."
 
-echo "Instalando requisitos base do ComfyUI e pacotes adicionais..."
+echo "Instalando requisitos base do ComfyUI e pacotes adicionais essenciais..."
 pip install -r requirements.txt --no-cache-dir --upgrade --force-reinstall
 pip install bitsandbytes>=0.43.0 gguf --upgrade # bitsandbytes e gguf
+pip install xformers # Garante que xformers esteja instalado para otimização
 
 echo "Limpeza de dependências: 'pip autoremove' não disponível, pulando."
 
-
-
-
-echo "Provisionamento personalizado concluído."
+echo "Provisionamento rápido do ComfyUI Master concluído!"
