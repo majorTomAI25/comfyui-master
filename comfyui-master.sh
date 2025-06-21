@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Define o diretório persistente 
-PERSISTENT_DIR="/workspace"
+# Define o diretório persistente para Quickpod
+PERSISTENT_DIR="/home/runner" # <
 cd "$PERSISTENT_DIR"
 
 # Causa o script a sair em caso de falha de qualquer comando.
