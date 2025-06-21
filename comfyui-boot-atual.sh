@@ -1,74 +1,57 @@
 #!/bin/bash
 
-# pastas necessárias
-mkdir -p /workspace/ComfyUI
+# Pasta principal
 cd /workspace
 
-# Clone do ComfyUI (se ainda não existir)
-if [ ! -d "ComfyUI" ]; then
-    echo "📦 Clonando ComfyUI..."
-    git clone https://github.com/comfyanonymous/ComfyUI.git  /workspace/ComfyUI
-fi
-
-# Ative o ambiente virtual do Jupyter
-echo "🔌 Ativando ambiente Conda..."
+# Garante ambiente Conda ativo
 source /opt/conda/etc/profile.d/conda.sh
 conda activate base
 
-# Instale dependências básicas
-echo "🧰 Instalando PyTorch e dependências principais..."
+# Baixa e instala o ComfyUI (se não existir)
+if [ ! -d "ComfyUI" ]; then
+    echo "📦 Clonando ComfyUI..."
+    git clone https://github.com/comfyanonymous/ComfyUI.git 
+fi
 
-pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu124 
-pip install -r /workspace/ComfyUI/requirements.txt
+# Entra na pasta ComfyUI
+cd ComfyUI
 
-# --- Baixe modelos do Sonic (opcional)
+# Atualiza o ComfyUI (se já clonado)
+git pull origin master
 
-mkdir -p /workspace/ComfyUI/models/sonic
-cd /workspace/ComfyUI/models/sonic
+# Cria pastas de modelos se necessário
+mkdir -p models/reactor models/sonic custom_nodes
 
-HUGGINGFACE_HUB_TOKEN="SEU_TOKEN_AQUI"
+# Baixa modelos WAN2.1 (ReActor)
+cd models/reactor
+wget -nc https://cloud.tsinghua.edu.cn/f/f73b4dbee5fa4a93aae5c/download?dl=1 -O wav2lip_gan.pth
+wget -nc https://github.com/TencentARC/GFPGAN/releases/download/v1.3.4/GFPGANv1.4.pth -O GFPGANv1.4.pth
+wget -nc https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/CodeFormer.cpkt -O CodeFormer.cpkt
 
-wget --header="Authorization: Bearer $HUGGINGFACE_HUB_TOKEN" \
-  -O unet.pth https://huggingface.co/smthemex/Sonic/raw/main/unet.pth 
+# Vai para custom nodes 
+cd ../../custom_nodes
 
-wget --header="Authorization: Bearer $HUGGINGFACE_HUB_TOKEN" \
-  -O audio2bucket.pth https://huggingface.co/smthemex/Sonic/raw/main/audio2bucket.pth 
-
-wget --header="Authorization: Bearer $HUGGINGFACE_HUB_TOKEN" \
-  -O audio2token.pth https://huggingface.co/smthemex/Sonic/raw/main/audio2token.pth 
-
-# --- Baixe modelos do ReActor (WAN2.1)
-
-mkdir -p /workspace/ComfyUI/models/reactor
-cd /workspace/ComfyUI/models/reactor
-
-wget -O wav2lip_gan.pth https://cloud.tsinghua.edu.cn/f/f73b4dbee5fa4a93aae5c/download?dl=1
-wget -O GFPGANv1.4.pth https://github.com/TencentARC/GFPGAN/releases/download/v1.3.4/GFPGANv1.4.pth
-wget -O CodeFormer.cpkt https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/CodeFormer.cpkt
-
-# --- Instale os Custom Nodes 
-
-cd /workspace/ComfyUI/custom_nodes
-
-# ReActor Node (WAV2LIP ANIMATED / WAN2.1)
+# Clona o ReActor Node (funcional)
 if [ ! -d "comfyui-reactor-node" ]; then
-    echo "🔊 Clonando ReActor Node..."
     git clone https://github.com/chehongjie/comfyui-reactor-node.git 
     pip install -r comfyui-reactor-node/requirements.txt
 else
-    echo "⏩ ReActor Node já instalado."
+    cd comfyui-reactor-node && git pull origin main || git pull origin master
 fi
 
-# Sonic Lip Sync
+# Clona o Sonic Lip Sync (se quiser usar também)
+cd ..
 if [ ! -d "ComfyUI_Sonic" ]; then
-    echo "🔊 Clonando ComfyUI_Sonic..."
     git clone https://github.com/smthemex/ComfyUI_Sonic.git 
-    pip install -r ComfyUI_Sonic/requirements.txt
+    cd ComfyUI_Sonic
+    pip install -r requirements.txt
 else
-    echo "⏩ ComfyUI_Sonic já instalado."
+    cd ComfyUI_Sonic && git pull origin main || git pull origin master
 fi
 
-# --- Inicie o ComfyUI
+# Volta para a pasta principal do ComfyUI
+cd ../..
+
+# Inicia o ComfyUI
 echo "🔁 Iniciando ComfyUI..."
-cd /workspace/ComfyUI
 python main.py --port 8188 --host 0.0.0.0
