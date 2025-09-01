@@ -10,7 +10,7 @@ if [ ! -d "ComfyUI" ]; then
     git clone https://github.com/comfyanonymous/ComfyUI.git /workspace/ComfyUI
 else
     echo "🔄 Atualizando ComfyUI..."
-    cd /workspace/ComfyUI
+    cd /ComfyUI
     git pull
     pip install -r requirements.txt
 fi
@@ -18,4 +18,5 @@ fi
 echo "🔁 Iniciando ComfyUI..."
 cd /workspace/ComfyUI
 python main.py --port 8188 --host 0.0.0.0
+
 
