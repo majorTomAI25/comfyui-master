@@ -11,19 +11,11 @@ if [ ! -d "ComfyUI" ]; then
 else
     echo "🔄 Atualizando ComfyUI..."
     cd /workspace/ComfyUI
-    git pull origin master
+    git pull
+    pip install -r requirements.txt
 fi
-
-# Ative o ambiente virtual do Jupyter
-echo "🔌 Ativando ambiente Conda..."
-source /opt/conda/etc/profile.d/conda.sh
-conda activate base
-
-# Instale dependências básicas
-echo "🧰 Instalando PyTorch e dependências principais..."
-pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu128 
-pip install -r /workspace/ComfyUI/requirements.txt
 
 echo "🔁 Iniciando ComfyUI..."
 cd /workspace/ComfyUI
 python main.py --port 8188 --host 0.0.0.0
+
