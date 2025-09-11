@@ -1,25 +1,20 @@
 #!/bin/bash
 
-# Crie pastas necessárias
-mkdir -p /workspace/ComfyUI
-cd /workspace
-
 # Clone do ComfyUI (se ainda não existir)
+echo "🔄 Instalando ComfyUI..."
 if [ ! -d "ComfyUI" ]; then
-    echo "📦 Clonando ComfyUI..."
-    git clone https://github.com/comfyanonymous/ComfyUI.git /workspace/ComfyUI
-else
-    echo "🔄 Atualizando ComfyUI..."
     git clone https://github.com/comfyanonymous/ComfyUI.git
+fi
+
 cd ComfyUI/custom_nodes
+echo "📥 Instalando ComfyUI-Manager..."
 git clone https://github.com/Comfy-Org/ComfyUI-Manager.git
+
 cd ..
-ComfyUI/
+echo "📦 Instalando dependências do ComfyUI..."
 pip install -r requirements.txt
 pip install triton
 pip install sageattention
-
-fi
 
 echo "🔁 Iniciando ComfyUI..."
 cd /workspace/ComfyUI
